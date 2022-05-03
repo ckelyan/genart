@@ -15,5 +15,5 @@ You can visualise all 3 steps by running flowfield.py
 ```
 python3 flowfields.py [--useCache, --newCache]
 ```
-`--useCache`: Use a JSON cache for the first map as it can take quite a long time depending on what it is
+`--useCache`: Use a JSON cache for the first map as it can take quite a long time depending on what size it is
 `--newCache`: Delete the old cache and generate a new one (if `--useCache` is specified)
