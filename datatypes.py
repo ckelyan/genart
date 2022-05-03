@@ -78,19 +78,19 @@ class Particle:
             except:
                 return AttributeError(a)
     
-    def applyForce(self, v: Vector, dist=1, t=1, b=False):
+    def applyForce(self, v: Vector, dist=1, time=1):
         self.v.applyForce(v, dist)
-        self.calcPos(t=t)
+        self.calcPos(time=time)
         
         return self
     
-    def calcPos(self, t=1):
-        self.x *= self.v.u * t
-        self.y *= self.v.v * t
+    def calcPos(self, time=1):
+        self.x *= self.v.u * time
+        self.y *= self.v.v * time
         
         return self
         
-    def round(self):
+    def roundPos(self):
         self.p.x = round(self.p.x)
         self.p.y = round(self.p.y)
         

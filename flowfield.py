@@ -26,13 +26,13 @@ class VelocityMap:
     def __init__(self, precision=None):
         self.precision = precision
         
-    def generateVMap(self, size_=None, **kwargs):
+    def generateVMap(self, size=None, **kwargs):
         if 'concatenatedArray' in kwargs.keys():
             aConc = kwargs['concatenatedArray']
             aConc = np.array(aConc) if type(aConc) != np.array else aConc
             
-            if not size_: size_ = (len(aConc[0]), len(aConc))
-            vmap = np.array([np.array([Vector().setWithAngle(angle=aConc[y][x][0], forces=(1, 1)) for x in range(size_[0])]) for y in range(size_[1])])
+            if not size: size = (len(aConc[0]), len(aConc))
+            vmap = np.array([np.array([Vector().setWithAngle(angle=aConc[y][x][0], forces=(1, 1)) for x in range(size[0])]) for y in range(size[1])])
             
             self.vmap = vmap
             
@@ -47,33 +47,29 @@ class VelocityMap:
 class Flowfield:
     ffmap: np.array = np.array([])
     
-    def generateFlowfield(self, vectorMap, size, density, particles: list[Particle]=[], particle: Particle=None):
+    def generateFlowfield(self, vectorMap, size, density, particles: list[Particle]=[], particle: Particle=None, influenced=lambda x: x < 20):
         ffmap = np.zeros((size, size))
         amntPer = int(size * density)
         vectorCoords = np.array([np.array([Pos(x, y) for x in range(amntPer, size, amntPer)]) for y in range(amntPer, size, amntPer)])
         
         ffmap[particle.x, particle.y] = 1
         
-        t = 0
-        varr = []
+        iteration = 0
         
-        while particle.x < size and particle.y < size and t < 10:
+        while particle.x < size and particle.y < size and iteration < 10:
             for crow, vrow in zip(vectorCoords, vectorMap):
                 for coords, vec in zip(crow, vrow):
                     dist = coords.distanceBetween(particle.p)
-                    inrange = True
-                    if inrange:
-                        v = copy(vec)
-                        # print(dist/size)
-                        particle.applyForce(v, dist=dist, b=False)
-                        varr.append(vec.v)
+                    
+                    if influenced(dist):
+                        vc = copy(vec)
+                        particle.applyForce(vc, dist=dist)
                    
-            # print(particle, end='\r')
-            if inrange:
-                particle.round()
+            if influenced(dist):
+                particle.roundPos()
                 ffmap[particle.p.x, particle.p.y] = 1
         
-            t += 1
+            iteration += 1
             
         self.ffmap = ffmap
         
@@ -100,9 +96,6 @@ if __name__ == '__main__':
     vmap.generateVMap(concatenatedArray=normalizedConcArray)
     axes.append(fig.add_subplot(132))
     plt.quiver([[j for j in range(amntPer, size, amntPer)] for i in range(amntPer, size, amntPer)], [[i for j in range(amntPer, size, amntPer)] for i in range(amntPer, size, amntPer)], [[v[0] for v in x] for x in vmap.vmap], [[v[1] for v in x] for x in vmap.vmap], scale=30)
-
-    # axes.append(fig.add_subplot(223))
-    # plt.imshow(((r, g, 0) for r, g in row) for row in vmap.vmap)
 
     ### Flow field map
     ffmap = Flowfield()
